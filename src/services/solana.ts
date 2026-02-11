@@ -1,5 +1,5 @@
 import { Connection, Keypair, PublicKey, LAMPORTS_PER_SOL } from '@solana/web3.js';
-import { getAssociatedTokenAddress, getAccount } from '@solana/spl-token';
+import { getAssociatedTokenAddress, getAccount, TOKEN_PROGRAM_ID, TOKEN_2022_PROGRAM_ID } from '@solana/spl-token';
 import bs58 from 'bs58';
 import { logInfo } from '../logger';
 
@@ -28,20 +28,27 @@ export async function getTokenBalance(
   mintAddress: string
 ): Promise<{ amount: number; rawAmount: bigint; decimals: number }> {
   const mint = new PublicKey(mintAddress);
-  const ata = await getAssociatedTokenAddress(mint, walletPublicKey);
-  try {
-    const account = await getAccount(connection, ata);
-    const decimals = (await connection.getParsedAccountInfo(mint)).value?.data
-      ? ((await connection.getParsedAccountInfo(mint)).value?.data as any)?.parsed?.info?.decimals ?? 0
-      : 0;
-    return {
-      amount: Number(account.amount) / Math.pow(10, decimals),
-      rawAmount: account.amount,
-      decimals,
-    };
-  } catch {
-    return { amount: 0, rawAmount: BigInt(0), decimals: 0 };
+
+  // Try both standard SPL and Token-2022 programs
+  for (const programId of [TOKEN_PROGRAM_ID, TOKEN_2022_PROGRAM_ID]) {
+    try {
+      const ata = await getAssociatedTokenAddress(mint, walletPublicKey, false, programId);
+      const account = await getAccount(connection, ata, undefined, programId);
+      if (account.amount > BigInt(0)) {
+        const mintInfo = await connection.getParsedAccountInfo(mint);
+        const decimals = (mintInfo.value?.data as any)?.parsed?.info?.decimals ?? 6;
+        return {
+          amount: Number(account.amount) / Math.pow(10, decimals),
+          rawAmount: account.amount,
+          decimals,
+        };
+      }
+    } catch {
+      // Try next program
+    }
   }
+
+  return { amount: 0, rawAmount: BigInt(0), decimals: 0 };
 }
 
 export function isValidSolanaMint(str: string): boolean {
