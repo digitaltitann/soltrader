@@ -12,6 +12,7 @@ import { sellToken } from './sell-token';
 import { getPortfolio } from './portfolio';
 import { getWalletBalance } from './wallet';
 import { waitTool } from './wait';
+import { syncPortfolio } from './sync-portfolio';
 
 // Tool definitions for Claude API
 export const toolDefinitions: Tool[] = [
@@ -82,6 +83,15 @@ export const toolDefinitions: Tool[] = [
     },
   },
   {
+    name: 'sync_portfolio',
+    description: 'Verify all open positions against actual on-chain wallet balances. Cleans up phantom positions (tracked but no tokens in wallet). Call this at the START of each trading cycle to keep the portfolio accurate.',
+    input_schema: {
+      type: 'object' as const,
+      properties: {},
+      required: [],
+    },
+  },
+  {
     name: 'wait',
     description: 'Pause before the next trading cycle. Use this when there is nothing actionable right now. The agent will resume after the wait.',
     input_schema: {
@@ -136,6 +146,8 @@ export class ToolExecutor {
         return getPortfolio(this.positions, this.priceService);
       case 'get_wallet_balance':
         return getWalletBalance(this.connection, this.wallet);
+      case 'sync_portfolio':
+        return syncPortfolio(this.positions, this.connection, this.wallet);
       case 'wait':
         return waitTool(params);
       default:

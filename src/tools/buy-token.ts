@@ -25,8 +25,8 @@ export async function buyToken(
       return { success: false, error: `SOL amount ${solAmount} exceeds safety limit (max: ${config.buyAmountSol * 2})` };
     }
 
-    if (positions.hasToken(mint)) {
-      return { success: false, error: `Already have a position in ${mint}. Duplicate buy blocked.` };
+    if (positions.hasOpenPosition(mint)) {
+      return { success: false, error: `Already have an open position in ${mint}. Duplicate buy blocked.` };
     }
 
     if (positions.getOpenCount() >= config.maxConcurrentPositions) {

@@ -15,8 +15,9 @@ export class PositionManager {
     this.load();
   }
 
-  hasToken(mint: string): boolean {
-    return this.seenTokens.has(mint);
+  hasOpenPosition(mint: string): boolean {
+    const pos = this.positions.get(mint);
+    return !!pos && pos.status !== 'closed';
   }
 
   getOpenCount(): number {
@@ -60,8 +61,27 @@ export class PositionManager {
     Object.assign(pos, updates);
     if (pos.status === 'closed') {
       this.closedPositions.push({ ...pos });
+      this.positions.delete(mint); // Remove from open positions map
     }
     this.save();
+  }
+
+  // Close a position that has no actual tokens (phantom/failed trade)
+  closePhantom(mint: string, reason: string): void {
+    const pos = this.positions.get(mint);
+    if (!pos) return;
+    pos.status = 'closed';
+    pos.closedAt = new Date().toISOString();
+    pos.pnlPct = -100; // Assume total loss
+    this.closedPositions.push({ ...pos });
+    this.positions.delete(mint);
+    logInfo(`Closed phantom position: ${pos.tokenSymbol || mint} (${reason})`);
+    this.save();
+  }
+
+  // Remove a mint from seen tokens so it can be bought again
+  clearSeen(mint: string): void {
+    this.seenTokens.delete(mint);
   }
 
   private save(): void {
@@ -84,11 +104,26 @@ export class PositionManager {
       const raw = fs.readFileSync(POSITIONS_FILE, 'utf-8');
       const data: PositionsData = JSON.parse(raw);
 
-      this.positions = new Map(Object.entries(data.openPositions || {}));
-      this.closedPositions = data.closedPositions || [];
+      // Only load non-closed positions into the active map
+      const allPositions = new Map(Object.entries(data.openPositions || {}));
+      for (const [mint, pos] of allPositions) {
+        if (pos.status === 'closed') {
+          // Move to closed list if not already there
+          if (!data.closedPositions?.some(cp => cp.id === pos.id)) {
+            this.closedPositions.push(pos);
+          }
+        } else {
+          this.positions.set(mint, pos);
+        }
+      }
+
+      this.closedPositions = [
+        ...this.closedPositions,
+        ...(data.closedPositions || []),
+      ];
       this.seenTokens = new Set(data.seenTokens || []);
 
-      logInfo(`Loaded ${this.positions.size} positions, ${this.seenTokens.size} seen tokens`);
+      logInfo(`Loaded ${this.positions.size} open positions, ${this.closedPositions.length} closed, ${this.seenTokens.size} seen tokens`);
     } catch (err) {
       logError('Failed to load positions', err);
     }
