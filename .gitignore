@@ -1,0 +1,10 @@
+node_modules/
+dist/
+.env
+.env.local
+positions.json
+activity-log.json
+*.log
+.next/
+.vercel/
+.claude/
