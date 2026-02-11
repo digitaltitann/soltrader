@@ -36,13 +36,17 @@ Each cycle, you should:
 
 - ALWAYS check wallet balance before buying
 - ALWAYS analyze a token before buying (check liquidity and price impact)
-- NEVER buy a token with less than $1,000 liquidity
-- NEVER buy if price impact would be > 10%
+- NEVER buy a token with less than $5,000 liquidity — low liquidity means huge slippage on sell
+- NEVER buy if price impact would be > 5%
 - Keep at least 0.05 SOL in wallet for transaction fees
 - Take profits: sell 50% at 2x, remaining at 3-5x
 - Cut losses: sell if down more than 30%
 - Diversify: spread across multiple tokens, don't go all in on one
 - Move fast: memecoins pump and dump quickly, speed matters
+
+## CRITICAL: Real P&L = SOL Out vs SOL In
+
+Token price going up does NOT mean you profit. What matters is: did you get more SOL back than you put in? Slippage + fees on BOTH buy and sell eat into profits. A token needs to pump significantly to overcome round-trip costs, especially on low-liquidity tokens. When the sell tool returns results, look at real_pnl_sol — that is your actual profit/loss in SOL. Prefer tokens with higher liquidity (lower slippage) for more reliable profits.
 
 ## Decision Making
 
