@@ -11,6 +11,18 @@ import { TradingAgent } from './agent';
 import { ApiServer } from './api-server';
 import { logInfo, logError, logAgent } from './logger';
 
+// Prevent crashes from unhandled rejections
+process.on('unhandledRejection', (reason: any) => {
+  logError(`Unhandled rejection: ${reason?.message || reason}`);
+  if (reason?.stack) logError(`Stack: ${reason.stack}`);
+});
+
+process.on('uncaughtException', (err: Error) => {
+  logError(`Uncaught exception: ${err.message}`);
+  if (err.stack) logError(`Stack: ${err.stack}`);
+  // Don't exit — let the agent try to recover
+});
+
 async function main() {
   console.log('\n=== SolTrader Agent ===\n');
 
@@ -35,7 +47,7 @@ async function main() {
   }
 
   // 4. Initialize services
-  const jupiter = new JupiterService(connection, wallet, config.slippageBps, config.maxPriceImpactPct);
+  const jupiter = new JupiterService(connection, wallet, config.slippageBps, config.maxPriceImpactPct, config.jupiterApiKey);
   const priceService = new PriceService();
   const xClient = new XClient(config.xBearerToken);
   const positions = new PositionManager();

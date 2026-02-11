@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useDashboard } from "./use-dashboard";
 import { Position, ActivityEntry } from "./types";
 
@@ -15,6 +16,41 @@ function timeAgo(dateStr: string): string {
   const hours = Math.floor(mins / 60);
   if (hours < 24) return `${hours}h ago`;
   return `${Math.floor(hours / 24)}d ago`;
+}
+
+function CopyWallet({ publicKey }: { publicKey: string }) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(publicKey);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <div className="text-muted text-xs mt-1 flex items-center gap-1.5">
+      Wallet:{" "}
+      <a
+        href={`https://solscan.io/account/${publicKey}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-blue hover:underline"
+      >
+        {truncateAddress(publicKey, 6)}
+      </a>
+      <button
+        onClick={handleCopy}
+        className="text-muted hover:text-foreground transition-colors p-0.5 rounded hover:bg-card-border/50"
+        title="Copy wallet address"
+      >
+        {copied ? (
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-green"><polyline points="20 6 9 17 4 12" /></svg>
+        ) : (
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg>
+        )}
+      </button>
+    </div>
+  );
 }
 
 function StatCard({
@@ -162,17 +198,7 @@ export default function Dashboard() {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold">SolTrader</h1>
-          <div className="text-muted text-xs mt-1">
-            Wallet:{" "}
-            <a
-              href={`https://solscan.io/account/${wallet.publicKey}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-blue hover:underline"
-            >
-              {truncateAddress(wallet.publicKey, 6)}
-            </a>
-          </div>
+          <CopyWallet publicKey={wallet.publicKey} />
         </div>
         <div className="flex items-center gap-2">
           <span

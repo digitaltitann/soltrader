@@ -3,7 +3,12 @@
 import { useState, useEffect, useCallback } from "react";
 import { DashboardData } from "./types";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+// When deployed on Vercel, use same-origin API routes (server-side proxy to agent)
+// When running locally, hit the agent API directly
+const API_URL =
+  typeof window !== "undefined" && window.location.hostname !== "localhost"
+    ? "" // same-origin — uses /api/dashboard route handler on Vercel
+    : "http://localhost:3001";
 const POLL_INTERVAL = 10000; // 10 seconds
 
 // Demo data for when the agent isn't running

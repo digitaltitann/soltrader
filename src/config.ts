@@ -20,6 +20,7 @@ export function loadConfig(): Config {
     rpcUrl: requireEnv('SOLANA_RPC_URL'),
     walletPrivateKey: requireEnv('WALLET_PRIVATE_KEY'),
     anthropicApiKey: requireEnv('ANTHROPIC_API_KEY'),
+    jupiterApiKey: requireEnv('JUPITER_API_KEY'),
     xBearerToken: requireEnv('X_BEARER_TOKEN'),
     buyAmountSol: parseFloat(optionalEnv('BUY_AMOUNT_SOL', '0.1')),
     slippageBps: parseInt(optionalEnv('SLIPPAGE_BPS', '300')),

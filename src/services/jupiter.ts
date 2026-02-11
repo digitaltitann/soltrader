@@ -2,7 +2,7 @@ import { Connection, Keypair, VersionedTransaction } from '@solana/web3.js';
 import { JupiterQuoteResponse, JupiterSwapResponse } from '../types';
 import { logInfo, logTrade, logError } from '../logger';
 
-const JUPITER_V6_BASE = 'https://quote-api.jup.ag/v6';
+const JUPITER_API_BASE = 'https://api.jup.ag/swap/v1';
 const SOL_MINT = 'So11111111111111111111111111111111111111112';
 
 export class JupiterService {
@@ -10,12 +10,14 @@ export class JupiterService {
   private wallet: Keypair;
   private slippageBps: number;
   private maxPriceImpactPct: number;
+  private apiKey: string;
 
-  constructor(connection: Connection, wallet: Keypair, slippageBps: number, maxPriceImpactPct: number) {
+  constructor(connection: Connection, wallet: Keypair, slippageBps: number, maxPriceImpactPct: number, apiKey: string) {
     this.connection = connection;
     this.wallet = wallet;
     this.slippageBps = slippageBps;
     this.maxPriceImpactPct = maxPriceImpactPct;
+    this.apiKey = apiKey;
   }
 
   async getQuote(inputMint: string, outputMint: string, amountRaw: number): Promise<JupiterQuoteResponse> {
@@ -26,7 +28,9 @@ export class JupiterService {
       slippageBps: this.slippageBps.toString(),
     });
 
-    const response = await fetch(`${JUPITER_V6_BASE}/quote?${params}`);
+    const response = await fetch(`${JUPITER_API_BASE}/quote?${params}`, {
+      headers: { 'x-api-key': this.apiKey },
+    });
     if (!response.ok) {
       const errorText = await response.text();
       throw new Error(`Jupiter quote failed (${response.status}): ${errorText}`);
@@ -40,12 +44,21 @@ export class JupiterService {
       userPublicKey: this.wallet.publicKey.toBase58(),
       wrapAndUnwrapSol: true,
       dynamicComputeUnitLimit: true,
-      prioritizationFeeLamports: 'auto',
+      dynamicSlippage: true,
+      prioritizationFeeLamports: {
+        priorityLevelWithMaxLamports: {
+          maxLamports: 1000000,
+          priorityLevel: 'high',
+        },
+      },
     };
 
-    const response = await fetch(`${JUPITER_V6_BASE}/swap`, {
+    const response = await fetch(`${JUPITER_API_BASE}/swap`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': this.apiKey,
+      },
       body: JSON.stringify(body),
     });
 

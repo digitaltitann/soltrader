@@ -2,6 +2,7 @@ export interface Config {
   rpcUrl: string;
   walletPrivateKey: string;
   anthropicApiKey: string;
+  jupiterApiKey: string;
   xBearerToken: string;
   buyAmountSol: number;
   slippageBps: number;
