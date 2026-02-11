@@ -49,7 +49,7 @@ async function main() {
   // 4. Initialize services
   const jupiter = new JupiterService(connection, wallet, config.slippageBps, config.maxPriceImpactPct, config.jupiterApiKey);
   const priceService = new PriceService();
-  const xClient = new XClient(config.xBearerToken);
+  const xClient = new XClient(config.xApiKey);
   const positions = new PositionManager();
 
   // 5. Initialize tool executor + agent

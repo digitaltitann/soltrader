@@ -21,7 +21,7 @@ export function loadConfig(): Config {
     walletPrivateKey: requireEnv('WALLET_PRIVATE_KEY'),
     anthropicApiKey: requireEnv('ANTHROPIC_API_KEY'),
     jupiterApiKey: requireEnv('JUPITER_API_KEY'),
-    xBearerToken: requireEnv('X_BEARER_TOKEN'),
+    xApiKey: requireEnv('X_API_KEY'),
     buyAmountSol: parseFloat(optionalEnv('BUY_AMOUNT_SOL', '0.1')),
     slippageBps: parseInt(optionalEnv('SLIPPAGE_BPS', '300')),
     maxConcurrentPositions: parseInt(optionalEnv('MAX_CONCURRENT_POSITIONS', '5')),

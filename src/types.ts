@@ -3,7 +3,7 @@ export interface Config {
   walletPrivateKey: string;
   anthropicApiKey: string;
   jupiterApiKey: string;
-  xBearerToken: string;
+  xApiKey: string;
   buyAmountSol: number;
   slippageBps: number;
   maxConcurrentPositions: number;
